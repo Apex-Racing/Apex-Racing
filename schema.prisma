@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  name        String
+  predictions Prediction[]
+  createdAt   DateTime     @default(now())
+}
+
+model Pilot {
+  id          Int         @id @default(autoincrement())
+  name        String
+  category    Category
+  team        String
+  country     String
+  bio         String?
+  imageUrl    String?
+  races       Race[]      // Relacionamento com corridas
+  createdAt   DateTime    @default(now())
+
+  @@index([category])
+}
+
+model Race {
+  id          Int          @id @default(autoincrement())
+  name        String
+  date        DateTime
+  circuit     String
+  category    Category
+  pilots      Pilot[]      // Relacionamento com pilotos
+  predictions Prediction[]
+  createdAt   DateTime     @default(now())
+
+  @@index([date, category])
+}
+
+model Prediction {
+  id          Int      @id @default(autoincrement())
+  user        User     @relation(fields: [userId], references: [id])
+  userId      Int
+  race        Race     @relation(fields: [raceId], references: [id])
+  raceId      Int
+  predictions Json
+  createdAt   DateTime @default(now())
+}
+
+enum Category {
+  F1
+  WEC
+  WRC
+}
